@@ -50,7 +50,14 @@ router.post('/register', (req, res) => {
       then(user => {
         if (user) {
           req.flash('error_msg', 'Email already registered.');
-          res.redirect('/users/register');
+          res.render('users/register', 
+          {
+            errors,
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+            password2: req.body.password2
+          });
         } else {
           const newUser = new User ({
             name: req.body.name,

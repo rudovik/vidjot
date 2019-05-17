@@ -24,17 +24,16 @@ router.get('/add', ensureAuthenticated, (req, res) => {
 // Edit Idea Form
 router.get('/edit/:id', ensureAuthenticated, (req, res) => {
   Idea.findOne({
-    _id: req.params.id
+    _id: req.params.id,
+    user: req.user.id
   }).then(idea => {
-    if (idea.user != req.user.id) {
-      req.flash('error_msg', 'Not authorized');
+    if (!idea) {
       res.redirect('/ideas'); 
     } else {
       res.render('ideas/edit', {
         idea
       });
-    }
-    
+    } 
   });
 });
 
@@ -76,6 +75,7 @@ router.put('/:id', ensureAuthenticated, (req, res) => {
     user: req.user.id
   }).
     then(idea => {
+      if (!idea) res.redirect('/ideas');
       // new values
       idea.title = req.body.title;
       idea.details = req.body.details;
@@ -94,8 +94,10 @@ router.delete('/:id', ensureAuthenticated, (req, res) => {
     _id: req.params.id,
     user: req.user.id
   }).
-    then(() => {
-      req.flash('success_msg', 'Video idea removed!');
+    then(idea => {
+      if (idea) {
+        req.flash('success_msg', 'Video idea removed!');
+      }
       res.redirect('/ideas');
     });
 });

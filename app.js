@@ -7,6 +7,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const passport = require('./config/passport');
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo')(session);
 
 const app = express();
 
@@ -14,18 +15,14 @@ const app = express();
 const ideaRouter = require('./routes/ideaRouter');
 const userRouter = require('./routes/userRouter');
 
-// // Passport Config
-// require('./config/passport')(passport);
-
-// DB Config
-const db = require('./config/database');
-
 // Connect to mongoose
-mongoose.connect(db.mongoURI, {
+mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true
 })
   .then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err));
+
+// console.log(mongoose.connection);
 
 // Handlebars Middleware
 app.engine('hbs', exphbs({
@@ -46,9 +43,12 @@ app.use(methodOverride('_method'));
 
 // Express session middleware
 app.use(session({
-  secret: 'rudovik',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
 }));
 
 // Passport middleware
@@ -81,7 +81,7 @@ app.get('/about', (req, res) => {
 app.use('/ideas', ideaRouter);
 app.use('/users', userRouter);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
