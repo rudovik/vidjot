@@ -8,7 +8,10 @@ const User = require('../models/User.js');
 
 // User Login Route
 router.get('/login', (req, res) => {
-  res.render('users/login');
+  res.render('users/login', {
+    email: req.body.email,
+    password: req.body.password
+  });
 });
 
 // User Register Route
